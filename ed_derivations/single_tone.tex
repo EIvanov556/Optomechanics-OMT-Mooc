@@ -1,0 +1,43 @@
+\documentclass{article}
+%\usepackage{graphicx}
+\usepackage{amsmath}
+%\usepackage{bm}
+%\usepackage{latexsym}
+%\usepackage[small]{caption}
+%\parskip=0pt
+%\setlength{\topmargin}{-20mm}
+%\setlength{\textheight}{240mm}
+
+\begin{document}
+\textbf{\Large
+%Title of the paper:
+Deriving the reflection coefficient for a (classical) single tone in a cavity experiment
+}
+\vspace{2mm}
+
+{
+We start from the general quantum coupled equation of motion for the cavity ladder operator $\hat{a}$, as well as an ansatz for the motion of the oscillator position, $x(t)$, which is taken to oscillate at an angular frequency $\Omega_m$, and an amplitude $x_{0}$.
+
+
+\begin{equation}
+\dot{\hat{a}} = -\kappa/2 \hat{a} + -i(\Delta + G\cdot x) \hat{a} + \sqrt{\kappa_{ext}} \hat{a}_{in}e^{-i\omega_{L} t} 
+\end{equation}
+\begin{equation}
+x(t) = x_{0} \cdot cos(\Omega_{m} t)
+\end{equation}
+
+The meanings are the same as in [1]. We take a classical form of (1) by taking the expectation value $\hat{a} \rightarrow \langle \hat{a} \rangle = \alpha$, and a similar for for $\hat{a}_{in}$. We further take a perturbative approach to the solution, that is assume that we can divide $\alpha(t)$ in two parts: the unperturbed solution $\alpha_{0}(t)$, as well as the small correction to this solution from the optomechanical interaction, $\alpha_{1}(t)$. We also assume that $x \approx \mathsf{O}(\alpha_{1})$. It is trivial to see that the steady-state unperturbed solution is:
+\begin{equation}
+\alpha_{0}(t) = \frac{\sqrt{\kappa_{ext}}}{i\Delta+\kappa/2} \alpha_{in} e^{i\omega_{L}t}.
+\end{equation}
+
+The perturbed equation can be rearranged to have the form (remembering that $2\cos(A) = e^{iA} + e^{-iA}$ ):
+\begin{equation}
+\alpha_{1}(t) = \frac{1}{i\Delta + \kappa/2}\cdot \frac{Gx_{0}}{2} \left(e^{i\Omega_m t} + e^{-i\Omega_m t} \right)
+\end{equation}
+
+
+
+
+[1] Kippenberg \textit{et al.} Rev. Mod. Phys. (2014)
+\end{document}
