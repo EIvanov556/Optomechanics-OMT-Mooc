@@ -16,25 +16,49 @@ Deriving the reflection coefficient for a (classical) single tone in a cavity ex
 \vspace{2mm}
 
 {
-We start from the general quantum coupled equation of motion for the cavity ladder operator $\hat{a}$, as well as an ansatz for the motion of the oscillator position, $x(t)$, which is taken to oscillate at an angular frequency $\Omega_m$, and an amplitude $x_{0}$.
+We start from the general for the classical equation of motion for the light field amplitude inside the cavity,  $a(t)$, as well as an Ansatz for the motion of the oscillator position, $x(t)$, which is taken to oscillate at an angular frequency $\Omega_m$, and an amplitude $x_{0}$.
 
 
 \begin{equation}
-\dot{\hat{a}} = -\kappa/2 \hat{a} + -i(\Delta + G\cdot x) \hat{a} + \sqrt{\kappa_{ext}} \hat{a}_{in}e^{-i\omega_{L} t} 
-\end{equation}
-\begin{equation}
-x(t) = x_{0} \cdot cos(\Omega_{m} t)
+\dot{a}(t) = -i(\omega_{res} + G\cdot x(t)) a(t) -\kappa/2 a(t) + \sqrt{\kappa_{ext}} a_{\mathsf{in}}(t)
+\label{eom_opt}
 \end{equation}
 
-The meanings are the same as in [1]. We take a classical form of (1) by taking the expectation value $\hat{a} \rightarrow \langle \hat{a} \rangle = \alpha$, and a similar for for $\hat{a}_{in}$. We further take a perturbative approach to the solution, that is assume that we can divide $\alpha(t)$ in two parts: the unperturbed solution $\alpha_{0}(t)$, as well as the small correction to this solution from the optomechanical interaction, $\alpha_{1}(t)$. We also assume that $x \approx \mathsf{O}(\alpha_{1})$. It is trivial to see that the steady-state unperturbed solution is:
 \begin{equation}
-\alpha_{0}(t) = \frac{\sqrt{\kappa_{ext}}}{i\Delta+\kappa/2} \alpha_{in} e^{i\omega_{L}t}.
+x(t) = x_{0} (e^{-i\Omega_mt} + e^{i\Omega_mt})/2
+\label{eom_mech}
 \end{equation}
 
-The perturbed equation can be rearranged to have the form (remembering that $2\cos(A) = e^{iA} + e^{-iA}$ ):
+The meanings are the same as in [1]. A monochromatic field at a fixed frequency $\omega_L$ is sent into the cavity, such that $a_{in}(t)= \alpha_{\mathsf{in}}e^{-i\omega_Lt}$. Assuming that the mechanical oscillation can modulate the light field to generate sidebands at frequencies $\pm\Omega_m$ around the cavity resonance, we make the following Ansatz for the intracavity lightfield:
+
 \begin{equation}
-\alpha_{1}(t) = \frac{1}{i\Delta + \kappa/2}\cdot \frac{Gx_{0}}{2} \left(e^{i\Omega_m t} + e^{-i\Omega_m t} \right)
+a(t) = \alpha_0 e^{-i\omega_Lt} + \alpha_1^- e^{-i(\omega_L - \Omega_m)t} + \alpha_1^+ e^{-i(\omega_L + \Omega_m)t},
+\label{ansatz_a}
 \end{equation}
+
+where the subscripts S and aS stand for Stokes and anti-Stokes, respectively. All terms oscillating at different frequencies are neglected in this study. Substituting for $x(t)$ and $a(t)$ into \eqref{eom_opt}, we separate the equation into terms oscillating at $\omega_L$, $\omega_L-\Omega_m$, and $\omega_L+\Omega_m$. Again, we neglect all terms oscillating at other frequencies. Let $\Delta=\omega_L-\omega_{res}$; this leaves us then with the following three coupled equations:\\
+$e^{-i\omega_Lt}$:
+\begin{equation}
+-i\Delta \alpha_0 = i G x_0(\alpha_1^+ + \alpha_1^-)/2 - \kappa/2 \alpha_0 + \sqrt{\kappa_{ext}} \alpha_{\mathsf{in}},
+\label{eom_a0}
+\end{equation}
+$e^{-i\omega_Lt - \Omega_m}$:
+\begin{equation}
+-i(\Delta - \Omega_m)\alpha_1^+ = i G x_0 \alpha_0/2 - \kappa \alpha_1^+/2,
+\end{equation}
+$e^{-i\omega_Lt + \Omega_m}$:
+\label{eom_a1+}
+\begin{equation}
+-i(\Delta-\Omega_m) \alpha_1^- = i G x_0 \alpha_0/2 - \kappa \alpha_1^-/2.
+\label{eom_a1-}
+\end{equation}
+
+We find then the general expression for the intracavity field:
+\begin{equation}
+\alpha_0 = \chi_{aa} \alpha_{\mathsf{in}} / \sqrt{\kappa_{\mathsf{ext}}},
+\end{equation}
+
+where $$\chi_{aa} = \kappa_{\mathsf{ext}} (-i\Delta +\kappa/2 + \chi_{ab})^{-1}$$ is the optical susceptibility, modified by the response of the mirror, and $$\chi_{ba}=-n_{\mathsf{th}}(g_0/2)^2\left[ (-i(\Delta+\Omega_m) + \kappa/2)^{-1} + (-i(\Delta-\Omega_m) + \kappa/2)^{-1}  \right]$$ is the mechanical susceptibility of the mirror. It is in general more telling to replace $G$ by the vacuum coupling rate $g_0 = Gx_{\mathsf{zpf}}$, where $x_{\mathsf{zpf}}$ is the displacement of the mirror caused by its zero point fluctuations. If we assume that the mirror is in thermal equilibrium with its environment, and attribute its oscillations to be due to thermal fluctuations, then we can express $x_0 = x_{\mathsf{zpf}}\sqrt{n_{\mathsf{th}}}$, $n_{\mathsf{th}}$ being the number of thermal phonons populating the mechanical oscillator.
 
 
 

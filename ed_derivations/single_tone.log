@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.3.12)  26 SEP 2018 16:28
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630 64-bit) (preloaded format=pdflatex 2018.3.12)  29 SEP 2018 11:03
 entering extended mode
 **./single_tone.tex
 (single_tone.tex
@@ -95,20 +95,20 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 11.
 LaTeX Font Info:    ... okay on input line 11.
 [1
 
-{C:/Users/edoua/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+{C:/Users/edoua/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] [2]
 (single_tone.aux) )
 (\end occurred inside a group at level 1)
 
 ### simple group (level 1) entered at line 18 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 830 strings out of 493305
- 9471 string characters out of 3138874
- 66051 words of memory out of 3000000
- 4444 multiletter control sequences out of 15000+200000
+ 836 strings out of 493305
+ 9526 string characters out of 3138874
+ 68051 words of memory out of 3000000
+ 4450 multiletter control sequences out of 15000+200000
  5960 words of font info for 22 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 27i,5n,20p,616b,123s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 27i,4n,20p,864b,135s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmb
 x12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb>
 <C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Prog
@@ -116,13 +116,12 @@ ram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Program Files
 /MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Program Files/MiKTeX 2
 .9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX 2.9/fonts/
 type1/public/amsfonts/cm/cmr7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/publ
-ic/amsfonts/cm/cmss10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfo
-nts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/c
-msy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb
->
-Output written on single_tone.pdf (1 page, 113018 bytes).
+ic/amsfonts/cm/cmss8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfon
+ts/cm/cmsy10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cm
+sy7.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on single_tone.pdf (2 pages, 119321 bytes).
 PDF statistics:
- 50 PDF objects out of 1000 (max. 8388607)
+ 53 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
