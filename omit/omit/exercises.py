@@ -47,6 +47,7 @@ class InteractiveFunction:
             if reset_fun is not None:
                 reset_fun()
 
+
 class MatplotlibUIWidget:
     """
     A simple Object class to contain all the attributed required by the Interactive Function __init__.
@@ -55,6 +56,7 @@ class MatplotlibUIWidget:
         self.init_fun = init_fun
         self.update_fun = update_fun
         self.reset_fun = reset_fun
+
 
 class OpticsOnly(InteractiveFunction):
     """
@@ -186,6 +188,7 @@ class OpticsOnly(InteractiveFunction):
         for par in self.widgets['axes'][1].keys():
             current_vals += (self.sliders[par].val,)
         return current_vals
+
 
 class OneToneExperiment(InteractiveFunction):
     params = dict([('eta', 1), ('g0', 1e2/1e5)])
