@@ -1,11 +1,7 @@
 import numpy as np
 from cmath import *
-from ipywidgets import interact, interactive, fixed, interact_manual
-# https://ipywidgets.readthedocs.io/en/stable/examples/Using%20Interact.html
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons, TextBox
-#import ipywidgets as widgets
-
 
 class InteractiveFunction:
     """
@@ -19,11 +15,12 @@ class InteractiveFunction:
     The UI widget is an object that must contain as attributes an init_fun, called at the initialisation, and a
     reset_fun, used when the reset button is pressed.
     The live updates of the widget are to be handled in the child class itself.
+
     """
     axcolor = 'lightgoldenrodyellow'
     window_size = [50, 100, 1000, 800]
     widgets = None
-    reset_pos = [0,0,0,0]
+    reset_pos = [0, 0, 0, 0]
 
     def __init__(self):
         self.fig, self.ax = plt.subplots()
@@ -40,12 +37,51 @@ class InteractiveFunction:
         self.button = Button(self.resetax, 'Reset', color=self.axcolor, hovercolor='0.975')
         self.button.on_clicked(self.reset_ui)
 
-    def reset_ui(self,event):
+    def reset_ui(self, event):
+        """
+        Note that the event input seems redundant but is absolutely necessary. Something within the functioning
+        of the matplotlib widget's response to action requires it. [MORE THOROUGH EXPLANATION WELCOME IF KNOWN]
+        """
         for key in self.widgets.keys():
             key_widget = self.widgets[key][0]
             reset_fun = key_widget.reset_fun
             if reset_fun is not None:
                 reset_fun()
+
+    def update_ui(self, val):
+        """
+        Will go through each of the widgets of self.widgets and, if present, do the update_function of that widget.
+        """
+
+        for widget in self.widgets.keys():
+            update_fun = self.widgets[widget][0].update_fun
+            if update_fun is not None:
+                update_fun()
+
+    def init_axes(self):
+        """
+        If the instance calls upon the creation of axes (that is, self.widgets contains an entry called 'axes',
+        this function defines them and places them.
+        """
+        self.slider_axes = dict()
+        self.sliders = dict()
+        for i, par in enumerate(self.widgets['axes'][1].keys()):
+            slider_positions = self.widgets['axes'][1][par][2]
+            self.slider_axes[par] = plt.axes(slider_positions,
+                                             facecolor=self.axcolor)
+
+            slider_tag = self.widgets['axes'][1][par][0]
+            slider_pars = self.widgets['axes'][1][par][1]
+            self.sliders[par] = Slider(self.slider_axes[par], slider_tag,
+                                       slider_pars[1],
+                                       slider_pars[2],
+                                       valinit=slider_pars[0],
+                                       valstep=slider_pars[3])
+            self.sliders[par].on_changed(self.update_ui)
+
+    def reset_axes(self):
+        for ax in self.widgets['axes'][1].keys():
+            self.sliders[ax].reset()
 
 
 class MatplotlibUIWidget:
@@ -75,19 +111,17 @@ class OpticsOnly(InteractiveFunction):
         self.widgets = {
             'plot': [MatplotlibUIWidget(self.plot_fig, self.update_plot_fig, None),
                      {
-                         'plot_coords': [0.05,1-plot_ylength-0.02,plot_xlength,plot_ylength],
+                         'plot_coords': [0.05, 0.98-plot_ylength, plot_xlength, plot_ylength],
                          'plot_range': [-self.omega_range, self.omega_range, 0, 1.1]
                      }],
             'axes': [MatplotlibUIWidget(self.init_axes, None, self.reset_axes),
                      {
-                         'eta_pos': ['eta', [1, 0, 5, 0.1], [0.75, 1-plot_ylength-0.02+0.1-0.04, 0.2, 0.025]]
+                         'eta_pos': ['$\eta$', [1, 0, 5, 0.01], [0.75, 1.04-plot_ylength, 0.2, 0.025]]
                      }],
             'explanatory_text': [MatplotlibUIWidget(self.show_text, self.update_text, None),
                                  {
-                                     'text_pos': [0.01, 1 - 0.65 - 0.02 - 0.3, 1 - 0.02, 0.25]
+                                     'text_pos': [0.01, 0.03, 0.98, 0.25]
                                  }]}
-        self.params = {
-            'eta': [1, 0, 5, 0.1]}
         super().__init__()
 
     def main_fun(self, *pars):
@@ -102,10 +136,7 @@ class OpticsOnly(InteractiveFunction):
         return omegas, r
 
     def plot_fig(self):
-        default_vals = ()
-        for par in self.params.keys():
-            default_vals += (self.params[par][0],)
-        x, y = self.main_fun(*default_vals)
+        x, y = self.main_fun(*self.default_vals)
         self.l, = plt.plot(x, y, lw=2, color='xkcd:black')
         plot_coords = self.widgets['plot'][1]['plot_coords']
         self.l.axes.set_position(plot_coords)
@@ -117,31 +148,8 @@ class OpticsOnly(InteractiveFunction):
         self.l.set_ydata(y)
         self.fig.canvas.draw_idle()
 
-    def init_axes(self):
-        self.slider_axes = dict()
-        self.sliders = dict()
-        for i, par in enumerate(self.widgets['axes'][1].keys()):
-            slider_positions = self.widgets['axes'][1][par][2]
-            self.slider_axes[par] = plt.axes(slider_positions,
-                                             facecolor=self.axcolor)
-
-            slider_tag = self.widgets['axes'][1][par][0]
-            slider_pars = self.widgets['axes'][1][par][1]
-            self.sliders[par] = Slider(self.slider_axes[par], slider_tag,
-                                       slider_pars[1],
-                                       slider_pars[2],
-                                       valinit=slider_pars[0],
-                                       valstep=slider_pars[3])
-            self.sliders[par].on_changed(self.update_ui)
-
-    def reset_axes(self):
-        for ax in self.widgets['axes'][1].keys():
-            self.sliders[ax].reset()
-
     def show_text(self):
-        default_vals = ()
-        for par in self.params.keys():
-            default_vals += (self.params[par][0],)
+        default_vals = self.default_vals
         text = self.get_explanatory_text(*default_vals)
 
         text_pos = self.widgets['explanatory_text'][1]['text_pos']
@@ -176,11 +184,99 @@ class OpticsOnly(InteractiveFunction):
                    'faster than they can be extracted from the cavity.'
         return text
 
-    def update_ui(self, val):
-        for widget in self.widgets.keys():
-            update_fun = self.widgets[widget][0].update_fun
-            if update_fun is not None:
-                update_fun()
+    @property
+    def current_vals(self):
+        current_vals = ()
+        for par in self.widgets['axes'][1].keys():
+            current_vals += (self.sliders[par].val,)
+        return current_vals
+
+    @property
+    def default_vals(self):
+        default_vals = ()
+        for par in self.widgets['axes'][1].keys():
+            default_vals += (self.widgets['axes'][1][par][1][0],)
+        return default_vals
+
+
+class OneToneExperiment(InteractiveFunction):
+    """
+    An InteractiveFunction for light sent into a cavity, where it interacts with a mechanical degree of freedom, with an
+    assumed small coupling. The transmission is then plotted.
+    as a function of the ratio between the loss coefficients (kext+k0)/kext
+    Everything is given in units of kext.
+    """
+    reset_pos = [0.85, 0.33, 0.1, 0.04]
+
+    def __init__(self):
+        self.window_size = [50, 100, 1000, 800]
+        self.omega_m_max = 15
+        self.omega_m_margin = 2
+        self.omega_range = self.omega_m_max+self.omega_m_margin  # axis will go from - omega_range to +omega_range
+        self.axes = (None, )  # initialises the axes
+
+        plot_xlength = 0.65
+        plot_ylength = plot_xlength
+        self.widgets = {
+            'plot': [MatplotlibUIWidget(self.plot_fig, self.update_plot_fig, None),
+                     {
+                         'plot_coords': [0.05, 0.98-plot_ylength, plot_xlength, plot_ylength],
+                         'plot_range': [-self.omega_range, self.omega_range, 0, 1.1]
+                     }],
+            'axes': [MatplotlibUIWidget(self.init_axes, None, self.reset_axes),
+                     {
+                         'eta_pos': ['$\eta$', [1, 0, 5, 0.01], [0.75, 1.04-plot_ylength, 0.2, 0.025]],
+                         'g0_pos': ['$g_0$', [5, 0, 100, 0.1], [0.75, 1.04-plot_ylength+0.1, 0.2, 0.025]],
+                         'omega_m_pos': ['$\Omega_\mathsf{m}$', [5, 1, self.omega_m_max, 1], [0.75, 1.04-plot_ylength+0.2, 0.2, 0.025]],
+                         't_pos': ['$T$', [300, 20, 500, 1], [0.75, 1.04-plot_ylength+0.3, 0.2, 0.025]]
+
+                     }]
+        }
+        super().__init__()
+
+    def main_fun(self, *pars):
+        """
+        Calculated the reflection coefficient of a Fabry-Perot cavity around its resonance frequency. pars takes (in
+        that order), the following arguments
+        eta is the effective coupling efficiency k0/kext
+        g0 is the vaccum coupling rate
+        omega_m is the mechanical frequency
+        t is the temperature (in K)
+        :param pars: a tuple containing (eta, g0, omega_m, t)
+        :return: the frequency range, the optical reflection coefficient, and the r at the side_band freqs
+        """
+        eta, g0, omega_m, t = pars
+        kb = 1e-23
+        hbar = 1e-34
+        g0 = g0/1e5  # normalised by kext
+        nth = (kb*t)/(hbar*omega_m*1e5)  # number of thermal phonons
+        omegas = np.arange(-self.omega_m_max-self.omega_m_margin, self.omega_m_max+self.omega_m_margin, 0.01)
+
+        denominator_rsb = -1j*(omegas+omega_m) + (1+eta)/2
+        denominator_bsb = -1j*(omegas-omega_m) + (1+eta)/2
+        chi_ab = nth*(g0/2)**2*(1/denominator_rsb + 1/denominator_bsb)
+        chi_aa = 1/(-1j*omegas + (1+eta)/2 + chi_ab)
+
+        r_opt = np.abs(1 - chi_aa)**2
+        r_rsb = nth*(g0/2)**2*np.abs(chi_aa/denominator_rsb)**2
+        r_bsb = nth*(g0/2)**2*np.abs(chi_aa/denominator_bsb)**2
+
+        return omegas, r_opt, r_rsb, r_bsb
+
+    def plot_fig(self):
+        x, y1, y2, y3 = self.main_fun(*self.default_vals)
+        self.axes = plt.plot(x, y1, 'xkcd:black', x, y2, 'xkcd:red', x, y3, 'xkcd:blue', lw=2)
+        plot_coords = self.widgets['plot'][1]['plot_coords']
+        for ax in self.axes:
+            ax.axes.set_position(plot_coords)
+        plot_range = self.widgets['plot'][1]['plot_range']
+        plt.axis(plot_range)
+
+    def update_plot_fig(self):
+        x, *ys = self.main_fun(*self.current_vals)
+        for ax, y in zip(self.axes, ys):
+            ax.set_ydata(y)
+        self.fig.canvas.draw_idle()
 
     @property
     def current_vals(self):
@@ -189,49 +285,9 @@ class OpticsOnly(InteractiveFunction):
             current_vals += (self.sliders[par].val,)
         return current_vals
 
-
-class OneToneExperiment(InteractiveFunction):
-    params = dict([('eta', 1), ('g0', 1e2/1e5)])
-
-    def main_fun(self, eta=1, g0=1e2/1e5, omega_m=8, t=300):
-        """"
-        ALL FREQUENCIES NORMALISED TO kext (arbitrarily taken to be 1e5)!!!
-        eta is the effective coupling efficiency k0/kext
-        g0 is the vaccum coupling rate
-        omega_m is the mechanical frequency
-        t is the temperature (in K)
-        """
-
-        kB = 1e-23
-        hbar = 1e-34
-        nth = (kB*t)/(hbar*omega_m*1e5)  # number of thermal phonons
-        omega_m_max = 15
-        omega_m_margin = 5
-
-        omegas = np.arange(-omega_m_max-omega_m_margin, omega_m_max+omega_m_margin, 0.01)
-
-        denominator_rsb = -1j*(omegas+omega_m) + (1+eta)/2
-        denominator_bsb = -1j*(omegas-omega_m) + (1+eta)/2
-
-        chi_ab = nth*(g0/2)**2*(1/denominator_rsb + 1/denominator_bsb)
-        chi_aa = 1/(-1j*omegas + (1+eta)/2 + chi_ab)
-        r_opt = np.abs(1 - chi_aa)**2
-
-        r_rsb = nth*(g0/2)**2*np.abs(chi_aa/denominator_rsb)**2
-        r_bsb = nth*(g0/2)**2*np.abs(chi_aa/denominator_bsb)**2
-
-        plt.plot(omegas, r_opt)
-        plt.plot(omegas, r_rsb, color='xkcd:red', linestyle='--')
-        plt.plot(omegas, r_bsb, color='xkcd:blue', linestyle='--')
-        plt.ylim(0, 1.01)
-        plt.xlim(-omega_m_max-omega_m_margin, omega_m_max+omega_m_margin)
-        plt.xlabel('detuning from resonance')
-        plt.ylabel('R')
-
-    def int_fun(self):
-        # NEEDS A PROPER GUI
-        eta_slider = widgets.FloatSlider(min=0, max=10, step=0.1, continuous_update=False, value=1)
-        g0_slider = widgets.FloatSlider(min=0, max=2e2/1e5, step=50/1e5, continuous_update=False, value=1e2/1e5)
-        omega_m_slider = widgets.FloatSlider(min=1, max=15, step=2, continuous_update=False, value=8)
-        t_slider = widgets.FloatSlider(min=1, max=300, step=50, continuous_update=False, value=300)
-        interactive(ote.main_fun, eta=eta_slider, g0=g0_slider, omega_m=omega_m_slider, t=t_slider)
+    @property
+    def default_vals(self):
+        default_vals = ()
+        for par in self.widgets['axes'][1].keys():
+            default_vals += (self.widgets['axes'][1][par][1][0],)
+        return default_vals
