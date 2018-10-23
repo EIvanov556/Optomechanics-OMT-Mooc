@@ -1,7 +1,9 @@
 import numpy as np
 from cmath import *
 import matplotlib.pyplot as plt
+import matplotlib.image as mimg
 from matplotlib.widgets import Slider, Button, RadioButtons, TextBox
+
 
 class InteractiveFunction:
     """
@@ -21,9 +23,10 @@ class InteractiveFunction:
     window_size = [50, 100, 1000, 800]
     widgets = None
     reset_pos = [0, 0, 0, 0]
+    window_title = 'Some Title'
 
     def __init__(self):
-        self.fig, self.ax = plt.subplots()
+        self.fig, self.ax = plt.subplots(num=self.window_title)
         plt.subplots_adjust(left=0.25, bottom=0.25)
         self.fig_manager = plt.get_current_fig_manager()
         self.fig_manager.window.setGeometry(self.window_size[0], self.window_size[1],
@@ -31,7 +34,8 @@ class InteractiveFunction:
 
         for key in self.widgets.keys():
             key_widget = self.widgets[key][0]
-            key_widget.init_fun()
+            if key_widget.init_fun is not None:
+                key_widget.init_fun()
 
         self.resetax = plt.axes(self.reset_pos)
         self.button = Button(self.resetax, 'Reset', color=self.axcolor, hovercolor='0.975')
@@ -83,6 +87,16 @@ class InteractiveFunction:
         for ax in self.widgets['axes'][1].keys():
             self.sliders[ax].reset()
 
+    def add_image(self, image_location, position):
+        """
+        Adds an image on the widget (it will be an axis-less plot).
+        :param image_location: Give the file address of the image
+        :param position: is a vector containing the position information [xmin, xmax, ymin, ymax]
+        """
+        img = mimg.imread(image_location)
+        fig = plt.imshow(img, extent=position)
+        fig.axes.axis('off')
+
 
 class MatplotlibUIWidget:
     """
@@ -101,6 +115,7 @@ class OpticsOnly(InteractiveFunction):
     Everything is given in units of kext.
     """
     reset_pos = [0.85, 0.33, 0.1, 0.04]
+    window_title = 'One-Tone, Optics Only, Experiment'
 
     def __init__(self):
         self.window_size = [50, 100, 1000, 800]
@@ -121,7 +136,14 @@ class OpticsOnly(InteractiveFunction):
             'explanatory_text': [MatplotlibUIWidget(self.show_text, self.update_text, None),
                                  {
                                      'text_pos': [0.01, 0.03, 0.98, 0.25]
-                                 }]}
+                                 }],
+            'cavity_image': [MatplotlibUIWidget(None, None, None),
+                             {
+                                 'image_location': 'C:\\Users\\edoua\\test.png',
+                                 'plot_coords': [0, 1, 0, 1]
+
+                             }]
+        }
         super().__init__()
 
     def main_fun(self, *pars):
@@ -184,6 +206,12 @@ class OpticsOnly(InteractiveFunction):
                    'faster than they can be extracted from the cavity.'
         return text
 
+    def add_cavity_image(self):
+        img_loc = self.widgets['cavity_image'][1]['image_location']
+        fig_pos = self.widgets['cavity_image'][1]['plot_coords']
+        self.add_image(img_loc, fig_pos)
+
+
     @property
     def current_vals(self):
         current_vals = ()
@@ -207,6 +235,7 @@ class OneToneExperiment(InteractiveFunction):
     Everything is given in units of kext.
     """
     reset_pos = [0.85, 0.33, 0.1, 0.04]
+    window_title = 'One-Tone Optomechanics Experiment'
 
     def __init__(self):
         self.window_size = [50, 100, 1000, 800]
@@ -227,7 +256,7 @@ class OneToneExperiment(InteractiveFunction):
                      {
                          'eta_pos': ['$\eta$', [1, 0, 5, 0.01], [0.75, 1.04-plot_ylength, 0.2, 0.025]],
                          'g0_pos': ['$g_0$', [5, 0, 100, 0.1], [0.75, 1.04-plot_ylength+0.1, 0.2, 0.025]],
-                         'omega_m_pos': ['$\Omega_\mathsf{m}$', [5, 1, self.omega_m_max, 1], [0.75, 1.04-plot_ylength+0.2, 0.2, 0.025]],
+                         'omega_m_pos':       ['$\Omega_\mathsf{m}$', [5, 1, self.omega_m_max, 1], [0.75, 1.04-plot_ylength+0.2, 0.2, 0.025]],
                          't_pos': ['$T$', [300, 20, 500, 1], [0.75, 1.04-plot_ylength+0.3, 0.2, 0.025]]
 
                      }]
