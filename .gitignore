@@ -1,3 +1,5 @@
 
 *.xml
 *.pyc
+omit/omit/__pycache__/exercises.cpython-36.pyc
+.idea/inspectionProfiles/Project_Default.xml
