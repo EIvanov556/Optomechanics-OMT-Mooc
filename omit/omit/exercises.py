@@ -3,6 +3,10 @@ from cmath import *
 import matplotlib.pyplot as plt
 import matplotlib.image as mimg
 from matplotlib.widgets import Slider, Button, RadioButtons, TextBox
+import os
+
+SCRIPT_DIR = os.path.dirname(__file__)
+RESOURCES_DIR = 'exercises_resources'
 
 
 class InteractiveFunction:
@@ -19,7 +23,7 @@ class InteractiveFunction:
     The live updates of the widget are to be handled in the child class itself.
 
     """
-    axcolor = 'lightgoldenrodyellow'
+    axcolor = 'xkcd:light pink'
     window_size = [50, 100, 1000, 800]
     widgets = None
     reset_pos = [0, 0, 0, 0]
@@ -29,8 +33,10 @@ class InteractiveFunction:
         self.fig, self.ax = plt.subplots(num=self.window_title)
         plt.subplots_adjust(left=0.25, bottom=0.25)
         self.fig_manager = plt.get_current_fig_manager()
-        self.fig_manager.window.setGeometry(self.window_size[0], self.window_size[1],
-                                            self.window_size[2], self.window_size[3])
+        self.fig_manager.window.setGeometry(self.window_size[0], 
+                                            self.window_size[1],
+                                            self.window_size[2], 
+                                            self.window_size[3])
 
         for key in self.widgets.keys():
             key_widget = self.widgets[key][0]
@@ -38,13 +44,16 @@ class InteractiveFunction:
                 key_widget.init_fun()
 
         self.resetax = plt.axes(self.reset_pos)
-        self.button = Button(self.resetax, 'Reset', color=self.axcolor, hovercolor='0.975')
+        self.button = Button(self.resetax, 'Reset', 
+                             color=self.axcolor, hovercolor='xkcd:orange')
         self.button.on_clicked(self.reset_ui)
 
     def reset_ui(self, event):
         """
-        Note that the event input seems redundant but is absolutely necessary. Something within the functioning
-        of the matplotlib widget's response to action requires it. [MORE THOROUGH EXPLANATION WELCOME IF KNOWN]
+        Note that the event input seems redundant but is absolutely necessary. 
+        Something within the functioning
+        of the matplotlib widget's response to action requires it. 
+        [MORE THOROUGH EXPLANATION WELCOME IF KNOWN]
         """
         for key in self.widgets.keys():
             key_widget = self.widgets[key][0]
@@ -54,9 +63,10 @@ class InteractiveFunction:
 
     def update_ui(self, val):
         """
-        Will go through each of the widgets of self.widgets and, if present, do the update_function of that widget.
+        Will go through each of the widgets of self.widgets and, if present, 
+        do the update_function of that widget.
+        The value input is obligatory for the syntax but can be a dummy
         """
-
         for widget in self.widgets.keys():
             update_fun = self.widgets[widget][0].update_fun
             if update_fun is not None:
@@ -64,8 +74,9 @@ class InteractiveFunction:
 
     def init_axes(self):
         """
-        If the instance calls upon the creation of axes (that is, self.widgets contains an entry called 'axes',
-        this function defines them and places them.
+        If the instance calls upon the creation of axes (that is, self.widgets 
+        contains an entry called 'axes', this function defines them and places 
+        them.)
         """
         self.slider_axes = dict()
         self.sliders = dict()
@@ -87,20 +98,23 @@ class InteractiveFunction:
         for ax in self.widgets['axes'][1].keys():
             self.sliders[ax].reset()
 
-    def add_image(self, image_location, position):
+    def add_image(self, image_location):
         """
         Adds an image on the widget (it will be an axis-less plot).
         :param image_location: Give the file address of the image
-        :param position: is a vector containing the position information [xmin, xmax, ymin, ymax]
+        :param position: is a vector containing the position information 
+        [xmin, xmax, ymin, ymax]
         """
         img = mimg.imread(image_location)
-        fig = plt.imshow(img, extent=position)
-        fig.axes.axis('off')
+        self.img_ax = plt.subplot2grid((3,3), (0,2), colspan=1, rowspan=1)
+        self.img_fig = self.img_ax.imshow(img)
+        self.img_fig.axes.axis('off')
 
 
 class MatplotlibUIWidget:
     """
-    A simple Object class to contain all the attributed required by the Interactive Function __init__.
+    A simple Object class to contain all the attributed required by the 
+    Interactive Function __init__.
     """
     def __init__(self, init_fun=None, update_fun=None, reset_fun=None):
         self.init_fun = init_fun
@@ -110,7 +124,8 @@ class MatplotlibUIWidget:
 
 class OpticsOnly(InteractiveFunction):
     """
-    An InteractiveFunction for light sent into a cavity, with no other effects given. The transmission is then plotted
+    An InteractiveFunction for light sent into a cavity, with no other effects 
+    given. The transmission is then plotted
     as a function of the ratio between the loss coefficients (kext+k0)/kext
     Everything is given in units of kext.
     """
@@ -118,73 +133,112 @@ class OpticsOnly(InteractiveFunction):
     window_title = 'One-Tone, Optics Only, Experiment'
 
     def __init__(self):
-        self.window_size = [50, 100, 1000, 800]
-        self.omega_range = 5  # axis will go from - omega_range to +omega_range
-
-        plot_xlength = 0.65
-        plot_ylength = plot_xlength
+        self.window_size = [50, 100, 700, 700]
+        self.omega_range = 5  # axis will go from - omega_range to +omega_range in MHz
+    
         self.widgets = {
-            'plot': [MatplotlibUIWidget(self.plot_fig, self.update_plot_fig, None),
-                     {
-                         'plot_coords': [0.05, 0.98-plot_ylength, plot_xlength, plot_ylength],
-                         'plot_range': [-self.omega_range, self.omega_range, 0, 1.1]
-                     }],
-            'axes': [MatplotlibUIWidget(self.init_axes, None, self.reset_axes),
-                     {
-                         'eta_pos': ['$\eta$', [1, 0, 5, 0.01], [0.75, 1.04-plot_ylength, 0.2, 0.025]]
-                     }],
-            'explanatory_text': [MatplotlibUIWidget(self.show_text, self.update_text, None),
+            'axes': [MatplotlibUIWidget(self.init_axes, 
+                                    None, 
+                                    self.reset_axes),
+                 {
+                     'eta_pos': ['$\kappa_\mathsf{intr}/\kappa_\mathsf{ext}$', 
+                                 [1, 0, 5, 0.01], 
+                                 [0.55, 0.34, 0.2, 0.025]],
+                     'alpha_pos': ['$\kappa_\mathsf{out}/\kappa_\mathsf{in}$',
+                                   [0, 0, 5, 0.01], 
+                                   [0.55, 0.3, 0.2, 0.025]],
+                     'kappa_intr': ['$\kappa_\mathsf{intr}$ (MHz)',
+                                   [1, 0, 3, 0.01], 
+                                   [0.2, 0.3, 0.1, 0.025]]
+                 }],
+            'plot': [MatplotlibUIWidget(self.init_fig, 
+                                        self.update_fig, 
+                                        None),
+                     {                        
+                         }],
+            'cavity_image': [MatplotlibUIWidget(self.init_cavity_image, 
+                                                self.update_cavity_image, 
+                                                self.reset_cavity_image),
+                             {
+                                 'names': ('hanger unidirectional',
+                                           'hanger bidirectional',
+                                           'Fabry-Pérot'),
+                                 'rax_pos': [0.675, 0.475, 0.3, 0.12],
+    
+                                 }],
+            'explanatory_text': [MatplotlibUIWidget(self.init_text, 
+                                                    self.update_text, 
+                                                    None),
                                  {
                                      'text_pos': [0.01, 0.03, 0.98, 0.25]
-                                 }],
-            'cavity_image': [MatplotlibUIWidget(None, None, None),
-                             {
-                                 'image_location': 'C:\\Users\\edoua\\test.png',
-                                 'plot_coords': [0, 1, 0, 1]
-
-                             }]
+                                     }],
+            'plot_units_radio': [MatplotlibUIWidget(self.init_units_radio, 
+                                                    None, 
+                                                    self.reset_units_radio),
+                                 {
+                                         'rax_pos': [0.025, 0.7555, 0.12, 0.12],
+                                         'choices': ('linear', 'dB')
+                                         }],
         }
         super().__init__()
 
     def main_fun(self, *pars):
         """
-        Calculated the reflection coefficient of a Fabry-Perot cavity around its resonance frequency.
+        Calculated the reflection coefficient of a Fabry-Perot cavity around 
+        its resonance frequency.
         :param pars: Contains only one item: eta, the ratio k0+kext/kext
         :return: the frequency range and the reflection coefficient in this range
         """
-        omegas = np.arange(-self.omega_range, self.omega_range, 0.01)  # in units of kext
-        susceptibility = 1 / (((1 + pars[0]) / 2) + 1j * omegas)
-        r = np.abs(1 - susceptibility) ** 2
-        return omegas, r
+        eta = pars[0]
+        k_intr = pars[2]
+        omegas = np.arange(-self.omega_range, self.omega_range, 2*self.omega_range/100)  
+        if self.cavity_choice == 'hanger unidirectional':    
+            susceptibility = (k_intr/eta) / (((k_intr + k_intr/eta) / 2) + 1j * omegas)
+            s21 = np.abs(1 - susceptibility)
+        elif self.cavity_choice == 'hanger bidirectional':  
+            susceptibility = (k_intr/eta) / (((k_intr + k_intr/eta) / 2) + 1j * omegas)
+            s21 = np.abs(1 - susceptibility/2)
+        elif self.cavity_choice == 'Fabry-Pérot':
+            alpha = pars[1]
+            susceptibility = (np.sqrt(alpha)/(1+alpha)) / (((1 + eta) / 2) + 1j * eta * omegas/k_intr)
+            s21 = np.abs(susceptibility)
+        if self.plot_units=='dB':
+            s21 = 20*np.log10(s21)
+        return omegas, s21
 
-    def plot_fig(self):
+    def init_fig(self):
         x, y = self.main_fun(*self.default_vals)
-        self.l, = plt.plot(x, y, lw=2, color='xkcd:black')
-        plot_coords = self.widgets['plot'][1]['plot_coords']
-        self.l.axes.set_position(plot_coords)
-        plot_range = self.widgets['plot'][1]['plot_range']
-        plt.axis(plot_range)
+        self.plt_ax = plt.subplot2grid((3,3), (0,0), colspan=2, rowspan=2)
+        self.l, = self.plt_ax.plot(x, y, lw=2, color='xkcd:black')
+        self.set_plot_labels_and_range()
 
-    def update_plot_fig(self):
+    def set_plot_labels_and_range(self):
+        ylabel = '|S21|' if self.plot_units=='linear' else 'S21'
+        self.plt_ax.set_ylabel('%s (%s)' %(ylabel, self.plot_units))
+        self.plt_ax.set_xlabel('detuning (MHz)')
+        self.plt_ax.set_xlim(-self.omega_range, +self.omega_range)
+        if self.plot_units=='linear':
+            self.plt_ax.set_ylim(0,1.1)
+        else:
+            self.plt_ax.set_ylim(-30, 0)
+        
+    def update_fig(self):
         x, y = self.main_fun(*self.current_vals)
+        self.set_plot_labels_and_range()
         self.l.set_ydata(y)
         self.fig.canvas.draw_idle()
 
-    def show_text(self):
+    def init_text(self):
         default_vals = self.default_vals
         text = self.get_explanatory_text(*default_vals)
-
         text_pos = self.widgets['explanatory_text'][1]['text_pos']
-        self.textax = plt.axes(text_pos, facecolor=self.axcolor)  # an axis needs to be created for each interactive object
-
+        # an axis needs to be created for each interactive object
+        self.textax = plt.axes(text_pos, facecolor=self.axcolor)  
         text = self.get_explanatory_text(*default_vals)
-        self.textbox = TextBox(self.textax, '', initial=text, color=self.axcolor, hovercolor=self.axcolor,
+        self.textbox = TextBox(self.textax, '', initial=text, 
+                               color=self.axcolor, hovercolor=self.axcolor,
                                label_pad=0.01)
-
-    def update_text(self):
-        new_text = self.get_explanatory_text(*self.current_vals)
-        self.textbox.set_val(new_text)
-
+        
     @staticmethod
     def get_explanatory_text(*pars):
         """
@@ -194,24 +248,69 @@ class OpticsOnly(InteractiveFunction):
         """
         eta = pars[0]
         if eta == 0:
-            text = 'Extremely overcoupled: \nThe losses are negligible compared to the rate at which light can escape.\n' \
-                   'All the light is then reflected back out of the cavity'
+            text = 'Extremely overcoupled: \nThe losses are negligible' \
+            ' compared to the rate at which light can escape.\n' \
+            'All the light is then reflected back out of the cavity'
         elif eta < 1:
-            text = 'Overcoupled: \nThe cavity losses are smaller than the external coupling rate.'
+            text = 'Overcoupled: \nThe cavity losses are smaller than the' \
+            'external coupling rate.'
         elif eta == 1:
-            text = 'Critical coupling:\nThe rate at which the light enters the cavity matches exactly the decay rate.\n' \
-                   'At resonance, all photons will be dissipated'
+            text = 'Critical coupling:\nThe rate at which the light enters' \
+            ' the cavity matches exactly the decay rate.\n' \
+            'At resonance, all photons will be dissipated'
         else:
-            text = 'Undercoupled:\nThis is the so-called "bad cavity" regime. All excitations die out ' \
-                   'faster than they can be extracted from the cavity.'
+            text = 'Undercoupled:\nThis is the so-called "bad cavity" regime.'\
+            'All excitations die out ' \
+            'faster \nthan they can be extracted from the cavity.'
         return text
+    
+    def update_text(self):
+        new_text = self.get_explanatory_text(*self.current_vals)
+        self.textbox.set_val(new_text)
 
-    def add_cavity_image(self):
-        img_loc = self.widgets['cavity_image'][1]['image_location']
-        fig_pos = self.widgets['cavity_image'][1]['plot_coords']
-        self.add_image(img_loc, fig_pos)
+    def init_cavity_image(self):
+        self.update_cavity_image()
+        
+        imgrax_pos = self.widgets['cavity_image'][1]['rax_pos']
+        imgrax = plt.axes(imgrax_pos, facecolor=self.axcolor)
+        imgrax_choices = self.widgets['cavity_image'][1]['names']
+        self.radio_image = RadioButtons(imgrax, imgrax_choices)
+        self.radio_image.on_clicked(self.update_ui)
+    
+    def update_cavity_image(self):
+        img_name = self.cavity_choice
+        img_loc = os.path.join(SCRIPT_DIR, RESOURCES_DIR, img_name+'.png')
+        self.add_image(img_loc)
+    
+    @property
+    def cavity_choice(self):
+        try:
+            return self.radio_image.value_selected
+        except AttributeError:
+            return self.widgets['cavity_image'][1]['names'][0]
+        
+    def reset_cavity_image(self):
+        self.radio_image.set_active(0)
+        #self.update_ui(None)
+    
+    def init_units_radio(self):
+        rax_pos = self.widgets['plot_units_radio'][1]['rax_pos']
+        rax = plt.axes(rax_pos, facecolor=self.axcolor)
+        rax_choices = self.widgets['plot_units_radio'][1]['choices']
+        self.radio_units = RadioButtons(rax, rax_choices)
+        self.radio_units.on_clicked(self.update_ui)
 
-
+    @property
+    def plot_units(self):
+        try:
+            return self.radio_units.value_selected
+        #default choice if the radio button does not exist
+        except AttributeError:
+            return self.widgets['plot_units_radio'][1]['choices'][0]
+        
+    def reset_units_radio(self):
+        self.radio_units.set_active(0)
+        
     @property
     def current_vals(self):
         current_vals = ()
@@ -229,7 +328,8 @@ class OpticsOnly(InteractiveFunction):
 
 class OneToneExperiment(InteractiveFunction):
     """
-    An InteractiveFunction for light sent into a cavity, where it interacts with a mechanical degree of freedom, with an
+    An InteractiveFunction for light sent into a cavity, where it interacts 
+    with a mechanical degree of freedom, with an
     assumed small coupling. The transmission is then plotted.
     as a function of the ratio between the loss coefficients (kext+k0)/kext
     Everything is given in units of kext.
@@ -247,17 +347,25 @@ class OneToneExperiment(InteractiveFunction):
         plot_xlength = 0.65
         plot_ylength = plot_xlength
         self.widgets = {
-            'plot': [MatplotlibUIWidget(self.plot_fig, self.update_plot_fig, None),
+            'plot': [MatplotlibUIWidget(self.plot_fig, self.update_plot_fig, 
+                                        None),
                      {
-                         'plot_coords': [0.05, 0.98-plot_ylength, plot_xlength, plot_ylength],
-                         'plot_range': [-self.omega_range, self.omega_range, 0, 1.1]
+                         'plot_coords': [0.05, 0.98-plot_ylength, 
+                                         plot_xlength, plot_ylength],
+                         'plot_range': [-self.omega_range, self.omega_range, 
+                                        0, 1.1]
                      }],
             'axes': [MatplotlibUIWidget(self.init_axes, None, self.reset_axes),
                      {
-                         'eta_pos': ['$\eta$', [1, 0, 5, 0.01], [0.75, 1.04-plot_ylength, 0.2, 0.025]],
-                         'g0_pos': ['$g_0$', [5, 0, 100, 0.1], [0.75, 1.04-plot_ylength+0.1, 0.2, 0.025]],
-                         'omega_m_pos':       ['$\Omega_\mathsf{m}$', [5, 1, self.omega_m_max, 1], [0.75, 1.04-plot_ylength+0.2, 0.2, 0.025]],
-                         't_pos': ['$T$', [300, 20, 500, 1], [0.75, 1.04-plot_ylength+0.3, 0.2, 0.025]]
+                         'eta_pos': ['$\eta$', [1, 0, 5, 0.01], 
+                                     [0.75, 1.04-plot_ylength, 0.2, 0.025]],
+                         'g0_pos': ['$g_0$', [35, 0, 100, 0.1], 
+                                    [0.75, 1.04-plot_ylength+0.1, 0.2, 0.025]],
+                         'omega_m_pos':       ['$\Omega_\mathsf{m}$', 
+                                               [5, 1, self.omega_m_max, 1], 
+                                               [0.75, 1.04-plot_ylength+0.2, 0.2, 0.025]],
+                         't_pos': ['$T$', [300, 20, 500, 1], 
+                                   [0.75, 1.04-plot_ylength+0.3, 0.2, 0.025]]
 
                      }]
         }
@@ -279,7 +387,8 @@ class OneToneExperiment(InteractiveFunction):
         hbar = 1e-34
         g0 = g0/1e5  # normalised by kext
         nth = (kb*t)/(hbar*omega_m*1e5)  # number of thermal phonons
-        omegas = np.arange(-self.omega_m_max-self.omega_m_margin, self.omega_m_max+self.omega_m_margin, 0.01)
+        omegas = np.arange(-self.omega_m_max-self.omega_m_margin, 
+                           self.omega_m_max+self.omega_m_margin, 0.01)
 
         denominator_rsb = -1j*(omegas+omega_m) + (1+eta)/2
         denominator_bsb = -1j*(omegas-omega_m) + (1+eta)/2
