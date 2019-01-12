@@ -141,8 +141,8 @@ class OpticsOnly(InteractiveFunction):
                                     None, 
                                     self.reset_axes),
                  {
-                     'eta_pos': ['$\kappa_\mathsf{intr}/\kappa_\mathsf{ext}$', 
-                                 [1, 0, 5, 0.01], 
+                     'eta_pos': ['$(\kappa_\mathsf{intr}+\kappa_\mathsf{ext})/\kappa_\mathsf{ext}$', 
+                                 [2, 1, 5, 0.01], 
                                  [0.55, 0.34, 0.2, 0.025]],
                      'alpha_pos': ['$\kappa_\mathsf{out}/\kappa_\mathsf{in}$',
                                    [0, 0, 5, 0.01], 
@@ -186,21 +186,27 @@ class OpticsOnly(InteractiveFunction):
         """
         Calculated the reflection coefficient of a Fabry-Perot cavity around 
         its resonance frequency.
-        :param pars: Contains only one item: eta, the ratio k0+kext/kext
+        :param pars: Contains : eta, the ratio (k_intr+k_ext)/k_ext; alpha, the ratio
+        k_out/k_in; k_intr
+        Frequencies in units of MHz
         :return: the frequency range and the reflection coefficient in this range
         """
+        dw = -0.5 #asymmetry detuning factor
         eta = pars[0]
         k_intr = pars[2]
         omegas = np.arange(-self.omega_range, self.omega_range, 2*self.omega_range/100)  
-        if self.cavity_choice == 'hanger unidirectional':    
-            susceptibility = (k_intr/eta) / (((k_intr + k_intr/eta) / 2) + 1j * omegas)
+        if self.cavity_choice == 'hanger unidirectional': 
+            freq_factor = (eta-1)/k_intr
+            susceptibility = (1 - 1j*dw*freq_factor) / ( eta/2 + 1j*omegas*freq_factor )
             s21 = np.abs(1 - susceptibility)
-        elif self.cavity_choice == 'hanger bidirectional':  
-            susceptibility = (k_intr/eta) / (((k_intr + k_intr/eta) / 2) + 1j * omegas)
+        elif self.cavity_choice == 'hanger bidirectional': 
+            freq_factor = (eta-1)/k_intr
+            susceptibility = (1 - 1j*dw*freq_factor) / ( eta/2 + 1j*omegas*freq_factor )
             s21 = np.abs(1 - susceptibility/2)
         elif self.cavity_choice == 'Fabry-Pérot':
             alpha = pars[1]
-            susceptibility = (np.sqrt(alpha)/(1+alpha)) / (((1 + eta) / 2) + 1j * eta * omegas/k_intr)
+            freq_factor = (eta-1-alpha)/k_intr
+            susceptibility = ( np.sqrt(alpha) - 1j*dw*freq_factor ) / ( eta/2 + 1j*omegas*freq_factor )
             s21 = np.abs(susceptibility)
         if self.plot_units=='dB':
             s21 = 20*np.log10(s21)
