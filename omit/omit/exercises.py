@@ -132,6 +132,7 @@ class OpticsOnly(InteractiveFunction):
             'axes': [MatplotlibUIWidget(self.init_axes, None, self.reset_axes),
                      {
                          'eta_pos': ['$\eta$', [1, 0, 5, 0.01], [0.75, 1.04-plot_ylength, 0.2, 0.025]]
+
                      }],
             'explanatory_text': [MatplotlibUIWidget(self.show_text, self.update_text, None),
                                  {
@@ -156,6 +157,122 @@ class OpticsOnly(InteractiveFunction):
         susceptibility = 1 / (((1 + pars[0]) / 2) + 1j * omegas)
         r = np.abs(1 - susceptibility) ** 2
         return omegas, r
+
+    def plot_fig(self):
+        x, y = self.main_fun(*self.default_vals)
+        self.l, = plt.plot(x, y, lw=2, color='xkcd:black')
+        plot_coords = self.widgets['plot'][1]['plot_coords']
+        self.l.axes.set_position(plot_coords)
+        plot_range = self.widgets['plot'][1]['plot_range']
+        plt.axis(plot_range)
+
+    def update_plot_fig(self):
+        x, y = self.main_fun(*self.current_vals)
+        self.l.set_ydata(y)
+        self.fig.canvas.draw_idle()
+
+    def show_text(self):
+        default_vals = self.default_vals
+        text = self.get_explanatory_text(*default_vals)
+
+        text_pos = self.widgets['explanatory_text'][1]['text_pos']
+        self.textax = plt.axes(text_pos, facecolor=self.axcolor)  # an axis needs to be created for each interactive object
+
+        text = self.get_explanatory_text(*default_vals)
+        self.textbox = TextBox(self.textax, '', initial=text, color=self.axcolor, hovercolor=self.axcolor,
+                               label_pad=0.01)
+
+    def update_text(self):
+        new_text = self.get_explanatory_text(*self.current_vals)
+        self.textbox.set_val(new_text)
+
+    @staticmethod
+    def get_explanatory_text(*pars):
+        """
+        Gives a short explanatory text about the current selected situation
+        :param pars:
+        :return: text to be displayed
+        """
+        eta = pars[0]
+        if eta == 0:
+            text = 'Extremely overcoupled: \nThe losses are negligible compared to the rate at which light can escape.\n' \
+                   'All the light is then reflected back out of the cavity'
+        elif eta < 1:
+            text = 'Overcoupled: \nThe cavity losses are smaller than the external coupling rate.'
+        elif eta == 1:
+            text = 'Critical coupling:\nThe rate at which the light enters the cavity matches exactly the decay rate.\n' \
+                   'At resonance, all photons will be dissipated'
+        else:
+            text = 'Undercoupled:\nThis is the so-called "bad cavity" regime. All excitations die out ' \
+                   'faster than they can be extracted from the cavity.'
+        return text
+
+    def add_cavity_image(self):
+        img_loc = self.widgets['cavity_image'][1]['image_location']
+        fig_pos = self.widgets['cavity_image'][1]['plot_coords']
+        self.add_image(img_loc, fig_pos)
+
+
+    @property
+    def current_vals(self):
+        current_vals = ()
+        for par in self.widgets['axes'][1].keys():
+            current_vals += (self.sliders[par].val,)
+        return current_vals
+
+    @property
+    def default_vals(self):
+        default_vals = ()
+        for par in self.widgets['axes'][1].keys():
+            default_vals += (self.widgets['axes'][1][par][1][0],)
+        return default_vals
+
+
+class OpticsOnlyDoubleSided(InteractiveFunction):
+    """
+    An InteractiveFunction for light sent into a cavity, with no other effects given. The transmission is then plotted
+    as a function of the ratio between the loss coefficients (kext+k0)/kext
+    Everything is given in units of kext.
+    """
+    reset_pos = [0.85, 0.33, 0.1, 0.04]
+    window_title = 'One-Tone, Optics Only, Experiment'
+
+    def __init__(self):
+        self.window_size = [50, 100, 1000, 800]
+        self.omega_range = 5  # axis will go from - omega_range to +omega_range
+
+        plot_xlength = 0.65
+        plot_ylength = plot_xlength
+        self.widgets = {
+            'plot': [MatplotlibUIWidget(self.plot_fig, self.update_plot_fig, None),
+                     {
+                         'plot_coords': [0.05, 0.98-plot_ylength, plot_xlength, plot_ylength],
+                         'plot_range': [-self.omega_range, self.omega_range, 0, 1.1]
+                     }],
+            'axes': [MatplotlibUIWidget(self.init_axes, None, self.reset_axes),
+                     {
+                         'gam2': ['$\gamma_1$', [1, 0, 10, 0.01], [0.75, 1.04-plot_ylength, 0.2, 0.025]],
+                         'gam1': ['$\gamma_2$', [1, 0, 10, 0.01], [0.75, 1.04-plot_ylength+0.1, 0.2, 0.025]]
+
+                     }],
+            'explanatory_text': [MatplotlibUIWidget(self.show_text, self.update_text, None),
+                                 {
+                                     'text_pos': [0.01, 0.03, 0.98, 0.25]
+                                 }]
+        }
+        super().__init__()
+
+    def main_fun(self, *pars):
+        """
+        Calculated the transmission coefficient of a Fabry-Perot cavity around its resonance frequency.
+        :param pars: Contains two items: gam1, the coupling of the imput mirror, and gam2, the coupling to the outpout
+        mirror, in units of the cavity loss rate, k0.
+        :return: the frequency range and the reflection coefficient in this range
+        """
+        omegas = np.arange(-self.omega_range, self.omega_range, 0.01)  # in units of k0
+        susceptibility = 1 / (((1 + pars[0] + pars[1]) / 2) + 1j * omegas)
+        t = pars[0]*pars[1]*np.abs(susceptibility) ** 2
+        return omegas, t
 
     def plot_fig(self):
         x, y = self.main_fun(*self.default_vals)
