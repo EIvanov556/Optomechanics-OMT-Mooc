@@ -3,3 +3,9 @@
 *.pyc
 omit/omit/__pycache__/exercises.cpython-36.pyc
 .idea/inspectionProfiles/Project_Default.xml
+*.png
+omit/omit/exercises_resources/hanger unidirectional.svg
+omit/omit/exercises_resources/test.jpeg
+*.svg
+*.png
+*.jpeg
