@@ -334,8 +334,10 @@ class OpticsOnly(InteractiveFunction):
 
 class OpticsOnlyDoubleSided(InteractiveFunction):
     """
-    An InteractiveFunction for light sent into a cavity, with no other effects given. The transmission is then plotted
-    as a function of the ratio between the loss coefficients (kext+k0)/kext
+    An InteractiveFunction for light sent into a cavity, with no other effects 
+    given. The transmission is then plotted as a function of the ratio between 
+    the loss coefficients (kext+k0)/kext
+    ;
     Everything is given in units of kext.
     """
     reset_pos = [0.85, 0.33, 0.1, 0.04]
@@ -551,3 +553,7 @@ class OneToneExperiment(InteractiveFunction):
         for par in self.widgets['axes'][1].keys():
             default_vals += (self.widgets['axes'][1][par][1][0],)
         return default_vals
+
+
+if __name__=='__main__':
+    oo = OpticsOnly()
